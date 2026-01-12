@@ -1,72 +1,72 @@
 # GenLayer Starter Contracts
 
-This repository contains **starter smart contract templates** for developers
-building on **GenLayer Studio**.
+This repository is created to help beginners understand how to deploy their first smart contract using GenLayer Studio and GenLayer Testnet.
 
-These templates are designed to help new builders quickly learn and deploy
-their first contracts with minimal setup.
+This is part of my GenLayer Builder Journey and mission contributions.
 
 ---
 
-## 🧠 What’s Inside
+## What is GenLayer?
 
-This repo includes the following base templates:
-
-### 🟡 `simple_storage.py`
-A basic contract with:
-- a stored value
-- setter & getter functions
-
-### 🟡 `counter_contract.py`
-A counter example with:
-- increment
-- decrement
-- read counter
-
-### 🟡 `owner_only_counter.py`
-A counter where only the owner can reset the counter.
+GenLayer is a new generation blockchain platform that allows developers to write intelligent contracts using Python.  
+It focuses on simplicity, AI integration, and better developer experience.
 
 ---
 
-## 🚀 How to Use These Templates
+## Requirements
 
-### Step 1 — Open GenLayer Studio
-Go to: https://studio.genlayer.com/run-debug
-
-### Step 2 — Connect Wallet
-Make sure your wallet is connected and you have Studio testnet GEN.
-
-### Step 3 — Create a New File
-In GenLayer Studio, create a new file with any of the template files
-below and paste the corresponding code.
-
-### Step 4 — Deploy
-Click **Deploy new instance** → confirm wallet transaction → wait for success.
-
-### Step 5 — Interact
-Use the built-in UI buttons to call view or write functions.
+- OKX Wallet or MetaMask
+- GenLayer Studio access
+- Testnet GEN tokens (from faucet)
 
 ---
 
-## 📄 Contract Templates
+## Networks Used
 
-### 📌 simple_storage.py
-```python
-# v0.1.0
-# { "Depends": "py-genlayer:latest" }
+- GenLayer Asimov Testnet  
+- GenLayer Studio Network
 
-from genlayer import *
+---
 
-class SimpleStorage(gl.Contract):
-    value: u256
+## Contract Included
 
-    def __init__(self):
-        self.value = 0
+`simple_storage.py`
 
-    @gl.public.view
-    def get(self) -> u256:
-        return self.value
+This contract stores a number and allows:
+- Reading the value
+- Updating the value
 
-    @gl.public.write
-    def set(self, v: u256):
-        self.value = v
+It is a basic beginner-friendly example.
+
+---
+
+## How to Deploy
+
+1. Open https://studio.genlayer.com  
+2. Connect your wallet  
+3. Upload `simple_storage.py`  
+4. Click Deploy  
+5. Confirm transaction in wallet  
+6. Wait for confirmation
+
+---
+
+## Common Problems
+
+- Transaction pending → wait or retry
+- Faucet empty → try later
+- Schema error → refresh Studio
+
+---
+
+## Purpose
+
+This repository is submitted as part of:
+- GenLayer Builder Contributions
+- Time-limited missions
+- Starter template examples
+
+It shows beginner-level understanding of:
+- Contract structure
+- Deployment process
+- Testnet interaction

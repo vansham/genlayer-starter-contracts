@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenLayer Prophet - Prediction Game</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const Trophy = (props) => (
+            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                <path d="M4 22h16" />
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+            </svg>
+        );
+
+        const Users = (props) => (
+            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+        );
+
+        const Clock = (props) => (
+            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+            </svg>
+        );
+
+        const Target = (props) => (
+            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+            </svg>
+        );
+
+        const TrendingUp = (props) => (
+            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+            </svg>
+        );
+
+        const Award = (props) => (
+            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="6" />
+                <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+            </svg>
+        );
+
+        const Crown = (props) => (
+            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" />
+            </svg>
+        );
+
+        const Zap = (props) => (
+            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+        );
+
+        function GenLayerProphet() {
+            const [gameState, setGameState] = useState('lobby');
+            const [roomCode, setRoomCode] = useState('');
+            const [playerName, setPlayerName] = useState('');
+            const [players, setPlayers] = useState([]);
+            const [currentRound, setCurrentRound] = useState(0);
+            const [prediction, setPrediction] = useState('');
+            const [timeLeft, setTimeLeft] = useState(60);
+            const [scores, setScores] = useState({});
+            const [showResults, setShowResults] = useState(false);
+
+            const dailyQuestions = [
+                {
+                    question: "How many new members will join GenLayer Discord today?",
+                    type: "number",
+                    options: ["0-50", "51-100", "101-200", "200+"]
+                },
+                {
+                    question: "What will be the most discussed topic in GenLayer community today?",
+                    type: "choice",
+                    options: ["Smart Contracts", "Consensus", "NFTs", "DeFi"]
+                },
+                {
+                    question: "How many contributions will be submitted today?",
+                    type: "number",
+                    options: ["0-5", "6-10", "11-20", "20+"]
+                }
+            ];
+
+            useEffect(() => {
+                if (gameState === 'playing' && timeLeft > 0) {
+                    const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+                    return () => clearTimeout(timer);
+                } else if (timeLeft === 0 && gameState === 'playing') {
+                    handleRoundEnd();
+                }
+            }, [timeLeft, gameState]);
+
+            const generateRoomCode = () => {
+                return Math.random().toString(36).substring(2, 8).toUpperCase();
+            };
+
+            const createRoom = () => {
+                if (!playerName.trim()) {
+                    alert('Please enter your name!');
+                    return;
+                }
+                const code = generateRoomCode();
+                setRoomCode(code);
+                setPlayers([{ name: playerName, id: Date.now(), score: 0, isHost: true }]);
+                setScores({ [playerName]: 0 });
+                setGameState('waiting');
+            };
+
+            const joinRoom = () => {
+                if (!playerName.trim() || !roomCode.trim()) {
+                    alert('Please enter name and room code!');
+                    return;
+                }
+                const newPlayer = { name: playerName, id: Date.now(), score: 0, isHost: false };
+                setPlayers([...players, newPlayer]);
+                setScores({ ...scores, [playerName]: 0 });
+                setGameState('waiting');
+            };
+
+            const startGame = () => {
+                setGameState('playing');
+                setCurrentRound(0);
+                setTimeLeft(60);
+                setShowResults(false);
+            };
+
+            const submitPrediction = () => {
+                if (!prediction) {
+                    alert('Please make a prediction!');
+                    return;
+                }
+                
+                const correctAnswer = dailyQuestions[currentRound].options[Math.floor(Math.random() * dailyQuestions[currentRound].options.length)];
+                const isCorrect = prediction === correctAnswer;
+                const points = isCorrect ? 100 : 50;
+                const timeBonus = Math.floor((timeLeft / 60) * 50);
+                const totalPoints = points + timeBonus;
+
+                setScores({
+                    ...scores,
+                    [playerName]: (scores[playerName] || 0) + totalPoints
+                });
+
+                setPrediction('');
+                
+                if (currentRound < dailyQuestions.length - 1) {
+                    setCurrentRound(currentRound + 1);
+                    setTimeLeft(60);
+                } else {
+                    setGameState('finished');
+                    setShowResults(true);
+                }
+            };
+
+            const handleRoundEnd = () => {
+                if (currentRound < dailyQuestions.length - 1) {
+                    setCurrentRound(currentRound + 1);
+                    setTimeLeft(60);
+                    setPrediction('');
+                } else {
+                    setGameState('finished');
+                    setShowResults(true);
+                }
+            };
+
+            const calculateXP = (score, rank) => {
+                const baseXP = {
+                    1: 500,
+                    2: 300,
+                    3: 200
+                };
+                const participationXP = 100;
+                return (baseXP[rank] || participationXP) + Math.floor(score / 10);
+            };
+
+            const sortedPlayers = Object.entries(scores)
+                .map(([name, score]) => ({ name, score }))
+                .sort((a, b) => b.score - a.score);
+
+            if (gameState === 'lobby') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+                        <div className="max-w-2xl w-full bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
+                            <div className="text-center mb-8">
+                                <div className="flex justify-center mb-4">
+                                    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 rounded-full">
+                                        <Target className="w-12 h-12 text-white" />
+                                    </div>
+                                </div>
+                                <h1 className="text-5xl font-bold text-white mb-3">GenLayer Prophet</h1>
+                                <p className="text-xl text-blue-200">Predict the Future, Earn XP!</p>
+                            </div>
+
+                            <div className="bg-white/5 rounded-2xl p-6 mb-8 border border-white/10">
+                                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                                    <Zap className="w-6 h-6 text-yellow-400" />
+                                    How to Play
+                                </h2>
+                                <ul className="space-y-2 text-blue-100">
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-yellow-400 font-bold">1.</span>
+                                        <span>Predict daily GenLayer community events</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-yellow-400 font-bold">2.</span>
+                                        <span>Compete with other players in real-time</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-yellow-400 font-bold">3.</span>
+                                        <span>Faster answers = More points!</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-yellow-400 font-bold">4.</span>
+                                        <span>Top 3 players earn bonus XP</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="space-y-4">
+                                <input
+                                    type="text"
+                                    placeholder="Enter your name"
+                                    value={playerName}
+                                    onChange={(e) => setPlayerName(e.target.value)}
+                                    className="w-full px-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                />
+
+                                <button
+                                    onClick={createRoom}
+                                    className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                                >
+                                    Create New Room
+                                </button>
+
+                                <div className="flex items-center gap-4">
+                                    <div className="flex-1 h-px bg-white/20"></div>
+                                    <span className="text-blue-200">OR</span>
+                                    <div className="flex-1 h-px bg-white/20"></div>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Room Code"
+                                        value={roomCode}
+                                        onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                                        className="flex-1 px-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    />
+                                    <button
+                                        onClick={joinRoom}
+                                        className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                                    >
+                                        Join
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (gameState === 'waiting') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+                        <div className="max-w-2xl w-full bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
+                            <div className="text-center mb-8">
+                                <h1 className="text-4xl font-bold text-white mb-2">Room: {roomCode}</h1>
+                                <p className="text-blue-200">Share this code with friends!</p>
+                            </div>
+
+                            <div className="bg-white/5 rounded-2xl p-6 mb-6 border border-white/10">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Users className="w-6 h-6 text-blue-400" />
+                                    <h2 className="text-2xl font-bold text-white">Players ({players.length})</h2>
+                                </div>
+                                <div className="space-y-2">
+                                    {players.map((player) => (
+                                        <div key={player.id} className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                                {player.name[0].toUpperCase()}
+                                            </div>
+                                            <span className="text-white font-medium">{player.name}</span>
+                                            {player.isHost && (
+                                                <span className="ml-auto bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                                    HOST
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={startGame}
+                                disabled={players.length < 1}
+                                className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Start Game
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (gameState === 'playing') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20 mb-6">
+                                <div className="flex justify-between items-center mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-blue-500 text-white px-4 py-2 rounded-full font-bold">
+                                            Round {currentRound + 1}/{dailyQuestions.length}
+                                        </div>
+                                        <div className="text-white font-medium">Score: {scores[playerName] || 0}</div>
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-full font-bold">
+                                        <Clock className="w-5 h-5" />
+                                        {timeLeft}s
+                                    </div>
+                                </div>
+
+                                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 mb-6">
+                                    <h2 className="text-2xl font-bold text-white text-center">
+                                        {dailyQuestions[currentRound].question}
+                                    </h2>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    {dailyQuestions[currentRound].options.map((option, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setPrediction(option)}
+                                            className={`p-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 ${
+                                                prediction === option
+                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
+                                                    : 'bg-white/10 text-white hover:bg-white/20'
+                                            }`}
+                                        >
+                                            {option}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={submitPrediction}
+                                    disabled={!prediction}
+                                    className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Submit Prediction
+                                </button>
+                            </div>
+
+                            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 shadow-2xl border border-white/20">
+                                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                    <TrendingUp className="w-6 h-6" />
+                                    Live Leaderboard
+                                </h3>
+                                <div className="space-y-2">
+                                    {sortedPlayers.slice(0, 5).map((player, index) => (
+                                        <div key={index} className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                                                index === 0 ? 'bg-yellow-500 text-white' :
+                                                index === 1 ? 'bg-gray-400 text-white' :
+                                                index === 2 ? 'bg-orange-600 text-white' :
+                                                'bg-white/10 text-white'
+                                            }`}>
+                                                {index + 1}
+                                            </div>
+                                            <span className="text-white font-medium flex-1">{player.name}</span>
+                                            <span className="text-yellow-400 font-bold">{player.score} pts</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (gameState === 'finished') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+                        <div className="max-w-3xl w-full bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
+                            <div className="text-center mb-8">
+                                <div className="flex justify-center mb-4">
+                                    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-6 rounded-full">
+                                        <Trophy className="w-16 h-16 text-white" />
+                                    </div>
+                                </div>
+                                <h1 className="text-5xl font-bold text-white mb-2">Game Over!</h1>
+                                <p className="text-xl text-blue-200">Final Results & XP Distribution</p>
+                            </div>
+
+                            <div className="space-y-3 mb-8">
+                                {sortedPlayers.map((player, index) => {
+                                    const xp = calculateXP(player.score, index + 1);
+                                    return (
+                                        <div
+                                            key={index}
+                                            className={`flex items-center gap-4 rounded-xl p-5 ${
+                                                index === 0 ? 'bg-gradient-to-r from-yellow-500 to-orange-600' :
+                                                index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
+                                                index === 2 ? 'bg-gradient-to-r from-orange-600 to-red-600' :
+                                                'bg-white/10'
+                                            }`}
+                                        >
+                                            <div className="text-4xl">
+                                                {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🎮'}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="text-white font-bold text-xl">{player.name}</div>
+                                                <div className="text-white/80">Score: {player.score} pts</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="flex items-center gap-2 text-yellow-300 font-bold text-2xl">
+                                                    <Award className="w-6 h-6" />
+                                                    +{xp} XP
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="bg-blue-500/20 border border-blue-400/50 rounded-xl p-6 mb-6">
+                                <h3 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
+                                    <Crown className="w-5 h-5 text-yellow-400" />
+                                    XP Distribution Rules
+                                </h3>
+                                <ul className="text-blue-100 space-y-1 text-sm">
+                                    <li>🥇 1st Place: 500 XP + Score Bonus</li>
+                                    <li>🥈 2nd Place: 300 XP + Score Bonus</li>
+                                    <li>🥉 3rd Place: 200 XP + Score Bonus</li>
+                                    <li>🎮 Participation: 100 XP + Score Bonus</li>
+                                    <li>⚡ Score Bonus = Total Points ÷ 10</li>
+                                </ul>
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    setGameState('lobby');
+                                    setRoomCode('');
+                                    setPlayerName('');
+                                    setPlayers([]);
+                                    setCurrentRound(0);
+                                    setScores({});
+                                }}
+                                className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                            >
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+        }
+
+        ReactDOM.render(<GenLayerProphet />, document.getElementById('root'));
+    </script>
+</body>
+</html>

@@ -70,3 +70,26 @@ It shows beginner-level understanding of:
 - Contract structure
 - Deployment process
 - Testnet interaction
+
+---
+
+## 🎮 GenLayer Prophet – Intelligent Contract Integration
+
+This repository now includes a mini-game that demonstrates how GenLayer-style
+intelligent contracts and validation logic can be applied in a gamified way.
+
+Game Folder:
+mini-games/prophet-game/
+
+Key idea:
+The game simulates how participants can act as validators, submit predictions,
+and receive rewards based on outcome validation.
+
+Related Files:
+- Game UI: mini-games/prophet-game/index.html
+- Game Docs: mini-games/prophet-game/DOCUMENTATION.md
+
+Purpose:
+This project shows how GenLayer concepts can be used beyond finance into
+interactive and educational applications.
+

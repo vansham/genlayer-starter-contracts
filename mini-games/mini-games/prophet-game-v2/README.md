@@ -28,3 +28,18 @@ This game demonstrates:
 - Fully client-side, no backend required
 
 Built for GenLayer Community Mini-Game Mission.
+
+
+## Why This Game Matters
+
+This game is designed to make GenLayer concepts easy to understand through practice.
+Instead of reading theory, players experience:
+- How consensus is formed
+- How validators are rewarded
+- How optimistic assumptions work in real time
+
+It turns GenLayer’s ideas into something you can feel, play, and understand.
+
+Built for the GenLayer Community Mini-Game Mission to showcase Optimistic Democracy
+and Intelligent Contracts in an interactive and educational way.
+

@@ -310,3 +310,9 @@ mini-games/prophet-game-v2/
 ├── index.html              # Complete game (all-in-one file)
 ├── README.md               # This file
 └── DOCUMENTATION.md        # Technical documentation
+
+
+
+The contract simulation maintains validator state, room lifecycle,
+and consensus resolution similar to GenLayer Intelligent Contracts.
+

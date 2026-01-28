@@ -497,7 +497,7 @@
             </div>
 
             <button class="btn btn-primary" onclick="startGame()" id="startGameBtn" disabled>
-                Start Game (Need 2+ players)
+                Start Game
             </button>
         </div>
 
@@ -829,7 +829,7 @@ class ProphetGameV2Contract {
             playerCount.textContent = gameState.players.length;
             
             const startBtn = document.getElementById('startGameBtn');
-            if (gameState.players.length >= 2) {
+            if (gameState.players.length >= 1) {
                 startBtn.disabled = false;
                 startBtn.textContent = 'Start Game';
             }

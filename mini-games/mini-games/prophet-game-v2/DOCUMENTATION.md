@@ -326,5 +326,9 @@ and consensus resolution similar to GenLayer Intelligent Contracts.
 
 This follows GenLayer’s Optimistic Democracy model.
 
+The Python contract simulates how GenLayer resolves non-deterministic execution
+using validator consensus and XP incentives.
+
+
 
 

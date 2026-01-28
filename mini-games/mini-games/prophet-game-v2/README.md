@@ -55,4 +55,12 @@ The contract handles:
 
 This mirrors how GenLayer validators reach agreement on non-deterministic execution.
 
+This project includes a Python-based GenLayer-style Intelligent Contract
+located at contracts/prophet_contract_v2.py which demonstrates:
+- Optimistic Democracy
+- Validator rewards
+- Majority consensus
+- Speed-based incentives
+
+
 

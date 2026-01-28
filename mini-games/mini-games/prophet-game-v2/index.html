@@ -836,13 +836,24 @@ class ProphetGameV2Contract {
         }
 
         function startGame() {
-            gameState.currentRound = 0;
-            gameState.players.forEach(player => {
-                gameState.playerXP[player] = 0;
-            });
-            loadRound();
-            showScreen('gameScreen');
-        }
+    gameState.currentRound = 0;
+    gameState.players.forEach(player => {
+        gameState.playerXP[player] = 0;
+    });
+
+    // 🔥 Create GenLayer Contract Room only once (like deploying a contract)
+    const questions = questionSets[gameState.selectedWeek];
+    const firstQuestion = questions[0];
+    contract.createRoom(
+        gameState.roomCode,
+        firstQuestion.question,
+        firstQuestion.options
+    );
+
+    loadRound();
+    showScreen('gameScreen');
+}
+
 
         function loadRound() {
             const questions = questionSets[gameState.selectedWeek];
@@ -963,11 +974,11 @@ class ProphetGameV2Contract {
         const question = questions[gameState.currentRound];
 
       // Use contract to resolve (use actual lobby room code)
-const roomCode = gameState.roomCode;
-contract.createRoom(roomCode, question.question, question.options);
+      const roomCode = gameState.roomCode;
 
 
-        // Submit all predictions
+
+         // Submit all predictions
         Object.entries(gameState.playerAnswers).forEach(([player, answer]) => {
             contract.submitPrediction(roomCode, player, answer);
         });

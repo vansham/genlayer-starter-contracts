@@ -316,3 +316,15 @@ mini-games/prophet-game-v2/
 The contract simulation maintains validator state, room lifecycle,
 and consensus resolution similar to GenLayer Intelligent Contracts.
 
+## Contract Lifecycle
+
+1. Room creation  
+2. Players submit predictions  
+3. Contract resolves consensus  
+4. XP distributed  
+5. Validator scores updated  
+
+This follows GenLayer’s Optimistic Democracy model.
+
+
+

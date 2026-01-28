@@ -160,3 +160,153 @@ Validators who voted with consensus are rewarded. **Speed incentivizes fast vali
 ## XP Calculation System
 
 ### Base Rewards
+
+
+GenLayer Integration
+  // Future: Actual Intelligent Contract call
+const contract = new GenLayerContract("0x...");
+const result = await contract.resolveConsensus(predictions);
+````
+
+---
+
+## Conclusion
+
+GenLayer Prophet v2 successfully demonstrates core blockchain concepts through gamification. By making players act as validators and experience consensus firsthand, the game provides an intuitive understanding of:
+
+- How Optimistic Democracy works
+- Why validator incentives matter
+- How non-deterministic execution is resolved
+- The balance between speed and accuracy
+
+The architecture is designed for easy extension, allowing the game to grow alongside GenLayer's development while maintaining educational value and entertainment.
+````
+
+---
+````markdown
+# GenLayer Prophet v2
+
+**Multiplayer Optimistic Consensus Game**
+
+A fun, interactive game that teaches GenLayer's Intelligent Contracts and Optimistic Democracy through hands-on gameplay.
+
+---
+
+## 🎮 Game Overview
+
+GenLayer Prophet v2 is an educational multiplayer game where players act as **validators** in a consensus network. Players submit predictions, and the majority answer becomes the **consensus truth** - demonstrating GenLayer's Optimistic Democracy in action.
+
+### Core Mechanics
+
+- **6 rounds per game** with timed questions
+- **Players vote** on answers (acting as validators)
+- **Majority wins** (consensus determination)
+- **XP rewards** for matching consensus
+- **Speed bonuses** for fastest correct validators
+
+---
+
+## ✨ Features
+
+### 🎯 Optimistic Democracy
+- Players submit predictions without seeing others' answers
+- Majority vote determines consensus
+- Demonstrates trustless agreement
+
+### ⚡ Speed Incentives
+- **Fastest correct**: +5 bonus XP
+- **2nd fastest**: +3 bonus XP  
+- **3rd fastest**: +1 bonus XP
+- Mimics validator speed rewards in real blockchains
+
+### 🏆 XP System
+- **10 XP** for correct consensus match
+- **0 XP** for wrong answers
+- **Bonus XP** for speed
+- Final leaderboard ranks all players
+
+### 📚 Weekly Content
+- **Week 1**: GenLayer Basics
+- **Week 2**: Consensus Mechanisms
+- **Week 3**: Intelligent Contracts
+- Easily extensible for more weeks
+
+### 🎨 Modern UI
+- Clean, responsive design
+- Smooth animations
+- Mobile-friendly
+- Glassmorphism aesthetic
+
+---
+
+## 🚀 Quick Start
+
+### Option 1: Direct Download
+
+1. Download `index.html`
+2. Open in any modern browser
+3. Start playing immediately!
+
+### Option 2: Clone Repository
+```bash
+git clone https://github.com/vansham/genlayer-starter-contracts.git
+cd genlayer-starter-contracts/mini-games/prophet-game-v2
+open index.html
+```
+
+### Option 3: GitHub Pages
+
+Live demo: `https://vansham.github.io/genlayer-starter-contracts/mini-games/prophet-game-v2/`
+
+---
+
+## 📖 How to Play
+
+### 1. Create or Join Room
+
+**Create Room:**
+- Enter your name
+- Select week (difficulty level)
+- Click "Create New Room"
+- Share 6-digit room code with friends
+
+**Join Room:**
+- Enter your name
+- Enter room code
+- Click "Join Room"
+
+### 2. Wait for Players
+
+- Minimum 2 players required
+- Host clicks "Start Game" when ready
+
+### 3. Answer Questions
+
+- Read each question carefully
+- Select your answer
+- Submit before timer runs out (60 seconds)
+- Fastest correct answers earn bonus XP!
+
+### 4. View Consensus
+
+After each round:
+- See vote distribution
+- See consensus answer (majority)
+- See your personal result
+- See XP breakdown
+
+### 5. Final Leaderboard
+
+After 6 rounds:
+- View final rankings
+- See total XP earned
+- Play again or return to lobby
+
+---
+
+## 📁 Folder Structure
+````
+mini-games/prophet-game-v2/
+├── index.html              # Complete game (all-in-one file)
+├── README.md               # This file
+└── DOCUMENTATION.md        # Technical documentation

@@ -1,1 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenLayer Prophet v2 - Multiplayer Optimistic Consensus Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .players-list {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1.4em;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .timer {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #667eea;
+        }
+
+        .timer.warning {
+            color: #ff6b6b;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .option-btn {
+            padding: 20px;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .option-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .consensus-screen {
+            text-align: center;
+        }
+
+        .vote-distribution {
+            margin: 30px 0;
+        }
+
+        .vote-bar {
+            margin: 15px 0;
+        }
+
+        .vote-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .vote-progress {
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .vote-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .consensus-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border-radius: 20px;
+            margin-left: 10px;
+            font-size: 0.9em;
+        }
+
+        .result-card {
+            padding: 30px;
+            border-radius: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .result-card.correct {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .result-card.wrong {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+        }
+
+        .xp-breakdown {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .xp-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .xp-item:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard {
+            margin: 20px 0;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .leaderboard-item.top-1 {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-color: #ffd700;
+        }
+
+        .leaderboard-item.top-2 {
+            background: linear-gradient(135deg, #c0c0c0 0%, #d3d3d3 100%);
+            border-color: #c0c0c0;
+        }
+
+        .leaderboard-item.top-3 {
+            background: linear-gradient(135deg, #cd7f32 0%, #e5a05f 100%);
+            border-color: #cd7f32;
+        }
+
+        .rank-badge {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-right: 15px;
+        }
+
+        .leaderboard-item.top-1 .rank-badge {
+            background: #ffd700;
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .leaderboard-item.top-2 .rank-badge {
+            background: #c0c0c0;
+            color: #333;
+        }
+
+        .leaderboard-item.top-3 .rank-badge {
+            background: #cd7f32;
+            color: white;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .player-xp {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-box h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin: 5px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ GenLayer Prophet v2</h1>
+        <p class="subtitle">Multiplayer Optimistic Consensus Game</p>
+
+        <!-- Screen 1: Lobby -->
+        <div id="lobbyScreen" class="screen active">
+            <div class="info-box">
+                <h3>🎮 How It Works</h3>
+                <p><strong>Optimistic Democracy in Action:</strong> Players act as validators. Predictions are votes. Majority answer becomes consensus truth. Fastest correct validators earn bonus XP!</p>
+            </div>
+
+            <div class="input-group">
+                <label>Your Name</label>
+                <input type="text" id="playerNameInput" placeholder="Enter your name" />
+            </div>
+
+            <div class="input-group">
+                <label>Select Week</label>
+                <select id="weekSelect">
+                    <option value="week1">Week 1 - GenLayer Basics</option>
+                    <option value="week2">Week 2 - Consensus Mechanisms</option>
+                    <option value="week3">Week 3 - Intelligent Contracts</option>
+                </select>
+            </div>
+
+            <div class="grid-2">
+                <button class="btn btn-primary" onclick="createRoom()">Create New Room</button>
+                <button class="btn btn-secondary" onclick="showJoinRoom()">Join Room</button>
+            </div>
+
+            <div id="joinRoomSection" style="display: none; margin-top: 20px;">
+                <div class="input-group">
+                    <label>Room Code</label>
+                    <input type="text" id="roomCodeInput" placeholder="Enter 6-digit code" maxlength="6" />
+                </div>
+                <button class="btn btn-primary" onclick="joinRoom()">Join Room</button>
+            </div>
+        </div>
+
+        <!-- Screen 2: Waiting Room -->
+        <div id="waitingScreen" class="screen">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">🚀 Room Created!</h2>
+            
+            <div class="info-box">
+                <h3>Room Code: <span id="roomCodeDisplay" style="font-size: 1.5em; color: #667eea;"></span></h3>
+                <p>Share this code with friends to join!</p>
+            </div>
+
+            <div class="players-list">
+                <h3 style="margin-bottom: 15px;">👥 Players (<span id="playerCount">0</span>)</h3>
+                <div id="playersListContainer"></div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startGame()" id="startGameBtn" disabled>
+                Start Game (Need 2+ players)
+            </button>
+        </div>
+
+        <!-- Screen 3: Game Round -->
+        <div id="gameScreen" class="screen">
+            <div class="game-header">
+                <div class="stat-box">
+                    <div class="stat-label">Round</div>
+                    <div class="stat-value"><span id="currentRound">1</span>/6</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Your XP</div>
+                    <div class="stat-value" id="playerXP">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Players</div>
+                    <div class="stat-value" id="activePlayers">0</div>
+                </div>
+            </div>
+
+            <div class="timer" id="roundTimer">60</div>
+
+            <div class="question-card">
+                <div class="question-text" id="questionText"></div>
+            </div>
+
+            <div class="options-grid" id="optionsContainer"></div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="submitAnswer()" id="submitBtn" disabled>
+                    Submit Answer
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 4: Consensus Results -->
+        <div id="consensusScreen" class="screen">
+            <div class="consensus-screen">
+                <h2 style="color: #667eea; margin-bottom: 30px;">📊 Consensus Results</h2>
+
+                <div class="question-card">
+                    <div class="question-text" id="consensusQuestion"></div>
+                </div>
+
+                <div class="vote-distribution" id="voteDistribution"></div>
+
+                <div class="result-card" id="personalResult">
+                    <h3 style="margin-bottom: 15px;">Your Result</h3>
+                    <div id="resultMessage"></div>
+                    <div class="xp-breakdown" id="xpBreakdown"></div>
+                </div>
+
+                <button class="btn btn-primary" onclick="nextRound()">
+                    Continue to Next Round
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 5: Final Leaderboard -->
+        <div id="leaderboardScreen" class="screen">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 30px;">🏆 Final Leaderboard</h2>
+
+            <div class="info-box">
+                <h3>🎯 Optimistic Democracy Summary</h3>
+                <p>Validators (players) submitted predictions. Consensus was determined by majority vote each round. Fastest accurate validators earned speed bonuses!</p>
+            </div>
+
+            <div class="leaderboard" id="finalLeaderboard"></div>
+
+            <div class="grid-2">
+                <button class="btn btn-primary" onclick="playAgain()">Play Again</button>
+                <button class="btn btn-secondary" onclick="backToLobby()">Back to Lobby</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Question Sets
+        const questionSets = {
+            week1: [
+                {
+                    question: "What is GenLayer's primary innovation?",
+                    options: ["Intelligent Contracts", "Faster Transactions", "Lower Fees", "Privacy Features"]
+                },
+                {
+                    question: "How does GenLayer achieve consensus?",
+                    options: ["Optimistic Democracy", "Proof of Work", "Proof of Stake", "Byzantine Fault Tolerance"]
+                },
+                {
+                    question: "What can Intelligent Contracts access?",
+                    options: ["Web Data & AI", "Only Blockchain Data", "Local Storage", "User Files"]
+                },
+                {
+                    question: "GenLayer validators vote on:",
+                    options: ["Execution Results", "Block Hashes", "Transaction Fees", "Network Speed"]
+                },
+                {
+                    question: "Optimistic means:",
+                    options: ["Assume Honest Unless Challenged", "Always Verify Everything", "Trust No One", "Random Selection"]
+                },
+                {
+                    question: "GenLayer's main use case is:",
+                    options: ["AI-Powered dApps", "Payment Processing", "File Storage", "Gaming Only"]
+                }
+            ],
+            week2: [
+                {
+                    question: "In consensus, majority means:",
+                    options: [">50% Agreement", "100% Agreement", "Any Agreement", "No Agreement"]
+                },
+                {
+                    question: "Validators in GenLayer are rewarded for:",
+                    options: ["Accurate Predictions", "Running Nodes", "Staking Tokens", "Mining Blocks"]
+                },
+                {
+                    question: "What happens if consensus fails?",
+                    options: ["Re-validation Round", "Transaction Rejected", "Network Halts", "Automatic Retry"]
+                },
+                {
+                    question: "Speed bonus rewards:",
+                    options: ["Fastest Correct Answers", "First Submission", "Highest Stake", "Random Validators"]
+                },
+                {
+                    question: "GenLayer's consensus is optimistic because:",
+                    options: ["Assumes Honest Majority", "Requires Proof", "Uses Random Oracle", "Needs Signatures"]
+                },
+                {
+                    question: "Validators who disagree can:",
+                    options: ["Challenge Results", "Leave Network", "Lose Stake", "Get Banned"]
+                }
+            ],
+            week3: [
+                {
+                    question: "Intelligent Contracts differ by:",
+                    options: ["Non-Deterministic Execution", "Faster Speed", "Lower Cost", "Better Security"]
+                },
+                {
+                    question: "GenLayer contracts can call:",
+                    options: ["External APIs", "Only Chain Data", "Local Functions", "Nothing External"]
+                },
+                {
+                    question: "AI in contracts enables:",
+                    options: ["Natural Language Processing", "Faster Hashing", "More Storage", "Cheaper Gas"]
+                },
+                {
+                    question: "Consensus ensures AI results are:",
+                    options: ["Verifiable & Agreed", "Always Correct", "Instant", "Free"]
+                },
+                {
+                    question: "GenLayer's vision is:",
+                    options: ["Web3 + AI Integration", "Replace Bitcoin", "Faster Ethereum", "Privacy Chains"]
+                },
+                {
+                    question: "The main challenge GenLayer solves:",
+                    options: ["Non-Deterministic Computation", "Scalability", "Interoperability", "Privacy"]
+                }
+            ]
+        };
+
+        // Game State
+        let gameState = {
+            roomCode: '',
+            players: [],
+            currentPlayer: '',
+            selectedWeek: 'week1',
+            currentRound: 0,
+            roundTimer: null,
+            playerAnswers: {},
+            playerXP: {},
+            playerAnswerTimes: {},
+            selectedAnswer: null,
+            gameStartTime: 0
+        };
+
+        // Contract Simulation
+        class ProphetGameV2Contract {
+            constructor() {
+                this.rooms = {};
+            }
+
+            createRoom(roomCode, question, options) {
+                this.rooms[roomCode] = {
+                    question: question,
+                    options: options,
+                    predictions: {},
+                    scores: {},
+                    created_at: Date.now(),
+                    resolved: false
+                };
+            }
+
+            submitPrediction(roomCode, player, answer) {
+                const timestamp = Date.now();
+                if (!this.rooms[roomCode].predictions[player]) {
+                    this.rooms[roomCode].predictions[player] = {
+                        answer: answer,
+                        timestamp: timestamp
+                    };
+                }
+            }
+
+            resolveRoom(roomCode) {
+                const room = this.rooms[roomCode];
+                const predictions = room.predictions;
+                
+                // Count votes
+                const voteCounts = {};
+                Object.values(predictions).forEach(pred => {
+                    voteCounts[pred.answer] = (voteCounts[pred.answer] || 0) + 1;
+                });
+
+                // Find consensus (majority)
+                let consensusAnswer = null;
+                let maxVotes = 0;
+                Object.entries(voteCounts).forEach(([answer, count]) => {
+                    if (count > maxVotes) {
+                        maxVotes = count;
+                        consensusAnswer = answer;
+                    }
+                });
+
+                // Sort by timestamp
+                const sortedPlayers = Object.entries(predictions).sort((a, b) => 
+                    a[1].timestamp - b[1].timestamp
+                );
+
+                // Calculate XP
+                const scores = {};
+                sortedPlayers.forEach(([player, pred], index) => {
+                    let xp = 0;
+                    if (pred.answer === consensusAnswer) {
+                        xp = 10; // Base XP for correct answer
+                        if (index === 0) xp += 5; // Fastest
+                        else if (index === 1) xp += 3; // 2nd
+                        else if (index === 2) xp += 1; // 3rd
+                    }
+                    scores[player] = xp;
+                });
+
+                room.resolved = true;
+                room.consensus_answer = consensusAnswer;
+                room.vote_counts = voteCounts;
+                room.scores = scores;
+
+                return {
+                    consensus: consensusAnswer,
+                    votes: voteCounts,
+                    scores: scores
+                };
+            }
+        }
+
+        const contract = new ProphetGameV2Contract();
+
+        function generateRoomCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function createRoom() {
+            const playerName = document.getElementById('playerNameInput').value.trim();
+            const selectedWeek = document.getElementById('weekSelect').value;
+
+            if (!playerName) {
+                alert('Please enter your name!');
+                return;
+            }
+
+            gameState.currentPlayer = playerName;
+            gameState.selectedWeek = selectedWeek;
+            gameState.roomCode = generateRoomCode();
+            gameState.players = [playerName];
+            gameState.playerXP[playerName] = 0;
+
+            document.getElementById('roomCodeDisplay').textContent = gameState.roomCode;
+            updatePlayersList();
+            showScreen('waitingScreen');
+        }
+
+        function showJoinRoom() {
+            document.getElementById('joinRoomSection').style.display = 'block';
+        }
+
+        function joinRoom() {
+            const playerName = document.getElementById('playerNameInput').value.trim();
+            const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+
+            if (!playerName || !roomCode) {
+                alert('Please enter your name and room code!');
+                return;
+            }
+
+            if (roomCode.length !== 6) {
+                alert('Room code must be 6 characters!');
+                return;
+            }
+
+            gameState.currentPlayer = playerName;
+            gameState.roomCode = roomCode;
+            gameState.players.push(playerName);
+            gameState.playerXP[playerName] = 0;
+
+            document.getElementById('roomCodeDisplay').textContent = gameState.roomCode;
+            updatePlayersList();
+            showScreen('waitingScreen');
+        }
+
+        function updatePlayersList() {
+            const container = document.getElementById('playersListContainer');
+            const playerCount = document.getElementById('playerCount');
+            
+            container.innerHTML = '';
+            gameState.players.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'player-item';
+                playerDiv.innerHTML = `
+                    <div class="player-avatar">${player.charAt(0).toUpperCase()}</div>
+                    <div style="flex: 1;">
+                        <strong>${player}</strong>
+                        ${player === gameState.currentPlayer ? '<span class="badge">You</span>' : ''}
+                        ${index === 0 ? '<span class="badge">Host</span>' : ''}
+                    </div>
+                `;
+                container.appendChild(playerDiv);
+            });
+
+            playerCount.textContent = gameState.players.length;
+            
+            const startBtn = document.getElementById('startGameBtn');
+            if (gameState.players.length >= 2) {
+                startBtn.disabled = false;
+                startBtn.textContent = 'Start Game';
+            }
+        }
+
+        function startGame() {
+            gameState.currentRound = 0;
+            gameState.players.forEach(player => {
+                gameState.playerXP[player] = 0;
+            });
+            loadRound();
+            showScreen('gameScreen');
+        }
+
+        function loadRound() {
+            const questions = questionSets[gameState.selectedWeek];
+            const question = questions[gameState.currentRound];
+
+            gameState.playerAnswers = {};
+            gameState.playerAnswerTimes = {};
+            gameState.selectedAnswer = null;
+            gameState.gameStartTime = Date.now();
+
+            document.getElementById('currentRound').textContent = gameState.currentRound + 1;
+            document.getElementById('playerXP').textContent = gameState.playerXP[gameState.currentPlayer] || 0;
+            document.getElementById('activePlayers').textContent = gameState.players.length;
+            document.getElementById('questionText').textContent = question.question;
+
+            // Create options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            question.options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => selectOption(option, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('submitBtn').disabled = true;
+
+            // Start timer
+            let timeLeft = 60;
+            document.getElementById('roundTimer').textContent = timeLeft;
+            document.getElementById('roundTimer').classList.remove('warning');
+
+            gameState.roundTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('roundTimer').textContent = timeLeft;
+
+                if (timeLeft <= 10) {
+                    document.getElementById('roundTimer').classList.add('warning');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(gameState.roundTimer);
+                    autoSubmitRound();
+                }
+            }, 1000);
+        }
+
+        function selectOption(option, btn) {
+            // Remove previous selection
+            document.querySelectorAll('.option-btn').forEach(b => {
+                b.classList.remove('selected');
+            });
+
+            // Select new option
+            btn.classList.add('selected');
+            gameState.selectedAnswer = option;
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        function submitAnswer() {
+            if (!gameState.selectedAnswer) return;
+
+            clearInterval(gameState.roundTimer);
+
+            const answerTime = Date.now() - gameState.gameStartTime;
+            gameState.playerAnswers[gameState.currentPlayer] = gameState.selectedAnswer;
+            gameState.playerAnswerTimes[gameState.currentPlayer] = answerTime;
+
+            // Simulate other players (for demo)
+            simulateOtherPlayers();
+
+            // Disable options
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.add('disabled');
+                btn.onclick = null;
+            });
+
+            // Show consensus after brief delay
+            setTimeout(() => {
+                showConsensusResults();
+            }, 1000);
+        }
+
+        function autoSubmitRound() {
+            if (!gameState.selectedAnswer) {
+                // Random answer if none selected
+                const questions = questionSets[gameState.selectedWeek];
+                const question = questions[gameState.currentRound];
+                gameState.selectedAnswer = question.options[Math.floor(Math.random() * question.options.length)];
+            }
+            submitAnswer();
+        }
+
+        function simulateOtherPlayers() {
+            const questions = questionSets[gameState.selectedWeek];
+            const question = questions[gameState.currentRound];
+
+            gameState.players.forEach(player => {
+                if (player !== gameState.currentPlayer) {
+                    // 70% chance of correct answer
+                    const isCorrect = Math.random() < 0.7;
+                    const correctAnswer = question.options[0]; // First option is always correct in our design
+                    
+                    if (isCorrect) {gameState.playerAnswers[player] = correctAnswer;
+                } else {
+                    const wrongOptions = question.options.slice(1);
+                    gameState.playerAnswers[player] = wrongOptions[Math.floor(Math.random() * wrongOptions.length)];
+                }
+
+                gameState.playerAnswerTimes[player] = Math.random() * 60000; // Random time
+            }
+        });
+    }
+
+    function showConsensusResults() {
+        const questions = questionSets[gameState.selectedWeek];
+        const question = questions[gameState.currentRound];
+
+        // Use contract to resolve
+        const roomCode = 'room_' + gameState.currentRound;
+        contract.createRoom(roomCode, question.question, question.options);
+
+        // Submit all predictions
+        Object.entries(gameState.playerAnswers).forEach(([player, answer]) => {
+            contract.submitPrediction(roomCode, player, answer);
+        });
+
+        // Resolve and get results
+        const results = contract.resolveRoom(roomCode);
+
+        // Display question
+        document.getElementById('consensusQuestion').textContent = question.question;
+
+        // Display vote distribution
+        const voteContainer = document.getElementById('voteDistribution');
+        voteContainer.innerHTML = '<h3 style="margin-bottom: 20px;">Vote Distribution</h3>';
+
+        const totalVotes = Object.values(results.votes).reduce((a, b) => a + b, 0);
+
+        question.options.forEach(option => {
+            const votes = results.votes[option] || 0;
+            const percentage = totalVotes > 0 ? (votes / totalVotes * 100) : 0;
+            const isConsensus = option === results.consensus;
+
+            const barDiv = document.createElement('div');
+            barDiv.className = 'vote-bar';
+            barDiv.innerHTML = `
+                <div class="vote-label">
+                    <span>${option} ${isConsensus ? '<span class="consensus-badge">✓ Consensus</span>' : ''}</span>
+                    <span>${votes} votes (${percentage.toFixed(0)}%)</span>
+                </div>
+                <div class="vote-progress">
+                    <div class="vote-fill" style="width: ${percentage}%">${percentage > 15 ? percentage.toFixed(0) + '%' : ''}</div>
+                </div>
+            `;
+            voteContainer.appendChild(barDiv);
+        });
+
+        // Personal result
+        const playerAnswer = gameState.playerAnswers[gameState.currentPlayer];
+        const isCorrect = playerAnswer === results.consensus;
+        const xpEarned = results.scores[gameState.currentPlayer] || 0;
+
+        gameState.playerXP[gameState.currentPlayer] = (gameState.playerXP[gameState.currentPlayer] || 0) + xpEarned;
+
+        const resultCard = document.getElementById('personalResult');
+        resultCard.className = `result-card ${isCorrect ? 'correct' : 'wrong'}`;
+
+        const resultMessage = document.getElementById('resultMessage');
+        resultMessage.innerHTML = `
+            <h2>${isCorrect ? '✓ Correct!' : '✗ Incorrect'}</h2>
+            <p style="font-size: 1.2em; margin-top: 10px;">You answered: <strong>${playerAnswer}</strong></p>
+            <p style="font-size: 1.2em;">Consensus: <strong>${results.consensus}</strong></p>
+        `;
+
+        // XP breakdown
+        const xpBreakdown = document.getElementById('xpBreakdown');
+        xpBreakdown.innerHTML = '';
+
+        if (isCorrect) {
+            const breakdown = [
+                { label: 'Correct Consensus Answer', xp: 10 },
+            ];
+
+            // Check speed bonus
+            const sortedTimes = Object.entries(gameState.playerAnswerTimes)
+                .filter(([p, t]) => gameState.playerAnswers[p] === results.consensus)
+                .sort((a, b) => a[1] - b[1]);
+
+            const playerRank = sortedTimes.findIndex(([p, t]) => p === gameState.currentPlayer);
+
+            if (playerRank === 0) {
+                breakdown.push({ label: 'Fastest Correct (1st)', xp: 5 });
+            } else if (playerRank === 1) {
+                breakdown.push({ label: '2nd Fastest Correct', xp: 3 });
+            } else if (playerRank === 2) {
+                breakdown.push({ label: '3rd Fastest Correct', xp: 1 });
+            }
+
+            breakdown.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'xp-item';
+                itemDiv.innerHTML = `<span>${item.label}</span><span>+${item.xp} XP</span>`;
+                xpBreakdown.appendChild(itemDiv);
+            });
+
+            const totalDiv = document.createElement('div');
+            totalDiv.className = 'xp-item';
+            totalDiv.style.fontWeight = 'bold';
+            totalDiv.style.fontSize = '1.2em';
+            totalDiv.innerHTML = `<span>Total XP Earned</span><span>+${xpEarned} XP</span>`;
+            xpBreakdown.appendChild(totalDiv);
+        } else {
+            xpBreakdown.innerHTML = '<p>No XP earned this round. Match consensus to earn rewards!</p>';
+        }
+
+        showScreen('consensusScreen');
+    }
+
+    function nextRound() {
+        gameState.currentRound++;
+
+        if (gameState.currentRound >= 6) {
+            showFinalLeaderboard();
+        } else {
+            loadRound();
+            showScreen('gameScreen');
+        }
+    }
+
+    function showFinalLeaderboard() {
+        const leaderboard = Object.entries(gameState.playerXP)
+            .map(([player, xp]) => ({ player, xp }))
+            .sort((a, b) => b.xp - a.xp);
+
+        const container = document.getElementById('finalLeaderboard');
+        container.innerHTML = '';
+
+        leaderboard.forEach((entry, index) => {
+            const rank = index + 1;
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `leaderboard-item ${rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : ''}`;
+            itemDiv.innerHTML = `
+                <div class="rank-badge">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
+                <div class="player-info">
+                    <div class="player-name">${entry.player}</div>
+                    ${entry.player === gameState.currentPlayer ? '<span class="badge">You</span>' : ''}
+                </div>
+                <div class="player-xp">${entry.xp} XP</div>
+            `;
+            container.appendChild(itemDiv);
+        });
+
+        showScreen('leaderboardScreen');
+    }
+
+    function playAgain() {
+        gameState.currentRound = 0;
+        gameState.players.forEach(player => {
+            gameState.playerXP[player] = 0;
+        });
+        loadRound();
+        showScreen('gameScreen');
+    }
+
+    function backToLobby() {
+        gameState = {
+            roomCode: '',
+            players: [],
+            currentPlayer: '',
+            selectedWeek: 'week1',
+            currentRound: 0,
+            roundTimer: null,
+            playerAnswers: {},
+            playerXP: {},
+            playerAnswerTimes: {},
+            selectedAnswer: null,
+            gameStartTime: 0
+        };
+        document.getElementById('playerNameInput').value = '';
+        document.getElementById('roomCodeInput').value = '';
+        document.getElementById('joinRoomSection').style.display = 'none';
+        showScreen('lobbyScreen');
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById(screenId).classList.add('active');
+    }
+</script>

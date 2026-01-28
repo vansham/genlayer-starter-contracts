@@ -43,3 +43,16 @@ It turns GenLayer’s ideas into something you can feel, play, and understand.
 Built for the GenLayer Community Mini-Game Mission to showcase Optimistic Democracy
 and Intelligent Contracts in an interactive and educational way.
 
+## Intelligent Contract Simulation
+
+This game uses a simulated GenLayer-style Intelligent Contract inside the frontend.
+
+The contract handles:
+- Prediction submission
+- Majority consensus resolution
+- Speed-based XP rewards
+- Validator reputation via globalScores
+
+This mirrors how GenLayer validators reach agreement on non-deterministic execution.
+
+

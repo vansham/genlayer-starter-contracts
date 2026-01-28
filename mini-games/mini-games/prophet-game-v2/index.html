@@ -672,83 +672,86 @@
             gameStartTime: 0
         };
 
-        // Contract Simulation
-        class ProphetGameV2Contract {
-            constructor() {
-                this.rooms = {};
-            }
+        // Contract Simulation (Upgraded)
+class ProphetGameV2Contract {
+    constructor() {
+        this.rooms = {};
+        this.globalScores = {}; // Validator reputation
+    }
 
-            createRoom(roomCode, question, options) {
-                this.rooms[roomCode] = {
-                    question: question,
-                    options: options,
-                    predictions: {},
-                    scores: {},
-                    created_at: Date.now(),
-                    resolved: false
-                };
-            }
+    createRoom(roomCode, question, options) {
+        if (!this.rooms[roomCode]) {
+            this.rooms[roomCode] = {
+                question,
+                options,
+                predictions: {},
+                resolved: false,
+                createdAt: Date.now()
+            };
+        }
+    }
 
-            submitPrediction(roomCode, player, answer) {
-                const timestamp = Date.now();
-                if (!this.rooms[roomCode].predictions[player]) {
-                    this.rooms[roomCode].predictions[player] = {
-                        answer: answer,
-                        timestamp: timestamp
-                    };
-                }
-            }
+    submitPrediction(roomCode, player, answer) {
+        if (!this.rooms[roomCode]) return;
 
-            resolveRoom(roomCode) {
-                const room = this.rooms[roomCode];
-                const predictions = room.predictions;
-                
-                // Count votes
-                const voteCounts = {};
-                Object.values(predictions).forEach(pred => {
-                    voteCounts[pred.answer] = (voteCounts[pred.answer] || 0) + 1;
-                });
+        if (!this.rooms[roomCode].predictions[player]) {
+            this.rooms[roomCode].predictions[player] = {
+                answer,
+                timestamp: Date.now()
+            };
+        }
+    }
 
-                // Find consensus (majority)
-                let consensusAnswer = null;
-                let maxVotes = 0;
-                Object.entries(voteCounts).forEach(([answer, count]) => {
-                    if (count > maxVotes) {
-                        maxVotes = count;
-                        consensusAnswer = answer;
-                    }
-                });
+    resolveRoom(roomCode) {
+        const room = this.rooms[roomCode];
+        if (!room || room.resolved) return;
 
-                // Sort by timestamp
-                const sortedPlayers = Object.entries(predictions).sort((a, b) => 
-                    a[1].timestamp - b[1].timestamp
-                );
+        const votes = {};
+        Object.values(room.predictions).forEach(p => {
+            votes[p.answer] = (votes[p.answer] || 0) + 1;
+        });
 
-                // Calculate XP
-                const scores = {};
-                sortedPlayers.forEach(([player, pred], index) => {
-                    let xp = 0;
-                    if (pred.answer === consensusAnswer) {
-                        xp = 10; // Base XP for correct answer
-                        if (index === 0) xp += 5; // Fastest
-                        else if (index === 1) xp += 3; // 2nd
-                        else if (index === 2) xp += 1; // 3rd
-                    }
-                    scores[player] = xp;
-                });
-
-                room.resolved = true;
-                room.consensus_answer = consensusAnswer;
-                room.vote_counts = voteCounts;
-                room.scores = scores;
-
-                return {
-                    consensus: consensusAnswer,
-                    votes: voteCounts,
-                    scores: scores
-                };
+        let consensus = null;
+        let maxVotes = 0;
+        for (let ans in votes) {
+            if (votes[ans] > maxVotes) {
+                maxVotes = votes[ans];
+                consensus = ans;
             }
         }
+
+        const sorted = Object.entries(room.predictions)
+            .sort((a, b) => a[1].timestamp - b[1].timestamp);
+
+        const scores = {};
+        sorted.forEach(([player, pred], index) => {
+            let xp = 0;
+            if (pred.answer === consensus) {
+                xp = 10;
+                if (index === 0) xp += 5;
+                else if (index === 1) xp += 3;
+                else if (index === 2) xp += 1;
+            }
+
+            scores[player] = xp;
+
+            if (!this.globalScores[player]) this.globalScores[player] = 0;
+            this.globalScores[player] += xp;
+        });
+
+        room.resolved = true;
+        room.consensus = consensus;
+        room.votes = votes;
+        room.scores = scores;
+
+        return {
+            consensus,
+            votes,
+            scores,
+            globalScores: this.globalScores
+        };
+    }
+}
 
         const contract = new ProphetGameV2Contract();
 
@@ -959,9 +962,10 @@
         const questions = questionSets[gameState.selectedWeek];
         const question = questions[gameState.currentRound];
 
-        // Use contract to resolve
-        const roomCode = 'room_' + gameState.currentRound;
-        contract.createRoom(roomCode, question.question, question.options);
+      // Use contract to resolve (use actual lobby room code)
+const roomCode = gameState.roomCode;
+contract.createRoom(roomCode, question.question, question.options);
+
 
         // Submit all predictions
         Object.entries(gameState.playerAnswers).forEach(([player, answer]) => {

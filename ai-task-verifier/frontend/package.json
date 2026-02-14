@@ -1,8 +1,11 @@
 {
-  "name": "frontend",
+  "name": "ai-task-verifier-frontend",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^18.2.0",

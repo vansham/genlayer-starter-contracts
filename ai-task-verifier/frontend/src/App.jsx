@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const BACKEND_URL = 'https://redesigned-invention-q99rgj6rr59269vr-3002.app.github.dev';
+const BACKEND_URL = 'https://ai-task-verifier-backend.vercel.app';
 
 function App() {
   const [tasks, setTasks] = useState([]);
